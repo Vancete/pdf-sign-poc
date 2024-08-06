@@ -1,0 +1,98 @@
+.app {
+    @apply flex flex-col overflow-hidden;
+    width: 100vw;
+    height: 100vh;
+
+    .header {
+        @apply flex items-center w-full bg-white px-6 py-4 select-none;
+
+        .logo {
+            @apply flex flex-col justify-center items-center text-white;
+            width: 20px;
+            height: 24px;
+            background: #058181;
+            margin-right: 6px;
+            border-top-right-radius: 10px;
+            line-height: 4px;
+
+            span {
+                transform: scaleX(1.5);
+            }
+        }
+
+        h1 {
+            @apply font-normal text-2xl text-black;
+
+            b {
+                @apply font-bold;
+            }
+        }
+
+        .user {
+            @apply ml-auto font-semibold text-base;
+            color: #078080;
+        }
+    }
+
+    .main-container {
+        @apply flex flex-col flex-1 overflow-hidden;
+
+        .toolbar {
+            @apply flex justify-center items-center w-full px-6 select-none;
+            min-height: 56px;
+
+            .filename {
+                @apply font-semibold text-base;
+                color: #616467;
+            }
+
+            .zoom {
+                @apply flex absolute;
+
+                & > div {
+                    @apply mx-2 cursor-pointer font-semibold rounded-md text-center;
+                    color: #fff;
+                    background: #616467;
+                    min-width: 24px;
+
+                    &:hover {
+                        background: #058181;
+                    }
+                }
+
+                span {
+                    @apply text-center;
+                    min-width: 48px;
+                }
+            }
+
+            .actions {
+                @apply flex ml-auto text-base;
+
+                & > button {
+                    @apply flex items-center mx-2 px-3 py-1 cursor-pointer rounded-md text-center;
+                    color: #616467;
+
+                    &:hover {
+                        color: #fff;
+                        background: #058181;
+
+                        path {
+                            fill: #fff;
+                        }
+                    }
+
+                    & > svg {
+                        @apply mr-2;
+                        height: 16px;
+                        width: auto;
+
+                        path {
+                            fill: #6c7073;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

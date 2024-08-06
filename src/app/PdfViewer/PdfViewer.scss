@@ -1,0 +1,171 @@
+.pdf-viewer {
+    @apply flex overflow-hidden;
+
+    .page-selector {
+        @apply flex flex-col px-8 py-4 overflow-auto;
+        min-width: 214px;
+
+        .thumbnail {
+            @apply relative border-2 border-white rounded-md shadow-md mb-3 cursor-pointer;
+            width: 150px;
+
+            &:hover {
+                border-color: #c6c7c7;
+            }
+
+            &.selected {
+                border-color: #078080;
+            }
+
+            img {
+                @apply rounded-md;
+            }
+
+            .th-info {
+                @apply absolute top-0 left-0 flex flex-col h-full p-1;
+
+                span {
+                    @apply px-2 rounded-sm;
+                    font-size: 10px;
+                    color: #333333;
+                    background: #f8f9fb;
+                }
+            }
+        }
+    }
+
+    .pdf-file {
+        @apply h-full flex flex-1 flex-col items-center overflow-auto rounded-lg bg-white;
+
+        .page-container {
+            @apply relative;
+
+            &:first-of-type {
+                @apply mt-8;
+            }
+
+            &:last-of-type {
+                @apply mb-8;
+            }
+
+            & > canvas {
+                @apply border border-solid border-gray-300 shadow-lg mb-2;
+            }
+
+            .vector-container {
+                text {
+                    fill: transparent;
+                }
+                text::selection {
+                    fill: white;
+                    background-color: #078080;
+                }
+            }
+
+            .signature-box {
+                @apply absolute border-2 border-dashed cursor-pointer rounded-lg;
+                border-color: #06817f;
+                background: #f8f9fb;
+
+                &:hover {
+                    background: #e5e6e8;
+                }
+            }
+        }
+    }
+
+    .sign-tools {
+        @apply flex flex-col p-8 overflow-auto;
+        min-width: 350px;
+
+        & > span {
+            @apply font-semibold mb-2;
+        }
+
+        .box {
+            @apply flex items-center bg-white rounded-md p-2 mb-4;
+
+            button {
+                @apply flex justify-center items-center rounded-md mr-4 cursor-pointer;
+                width: 32px;
+                height: 32px;
+                background: #f8f9fb;
+
+                &:hover {
+                    background: #078080;
+
+                    & > span {
+                        color: white;
+                    }
+                }
+
+                & > span {
+                    @apply text-3xl font-light mb-1;
+                    color: #acb1b6;
+                }
+            }
+
+            span {
+                @apply text-sm select-none;
+                color: #616467;
+            }
+
+            #signature {
+                @apply ml-auto mr-auto;
+                width: 200px;
+            }
+        }
+    }
+}
+
+.sign-modal {
+    @apply fixed top-0 left-0 w-full h-full flex items-center justify-center;
+    background: rgba(0, 0, 0, 0.5);
+
+    .window {
+        @apply bg-white rounded-md p-8;
+        min-width: 600px;
+
+        .title {
+            @apply font-bold pb-4 mb-4 border-b border-gray-300;
+        }
+
+        .content {
+            @apply relative flex justify-center rounded-md;
+            background: #f8f9fb;
+
+            .overlay {
+                @apply absolute top-0 left-0 flex flex-col justify-center items-center w-full h-full pointer-events-none text-sm;
+                color: #b6b8ba;
+
+                .line {
+                    @apply bg-black opacity-65 mt-24 mb-8;
+                    width: 400px;
+                    height: 1px;
+                }
+            }
+        }
+
+        .actions {
+            @apply flex mt-4;
+            gap: 12px;
+
+            button {
+                @apply flex-1 border-2 font-bold rounded-md p-2;
+                color: #06817f;
+                border-color: #06817f;
+
+                &:last-child {
+                    color: white;
+                    background: #06817f;
+                }
+
+                &:hover {
+                    color: white;
+                    background: #066e6c;
+                    border-color: #066e6c;
+                }
+            }
+        }
+    }
+}
