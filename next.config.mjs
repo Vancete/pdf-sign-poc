@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
-  swcMinify: true,
-  output: "standalone",
-  webpack: (config) => {
-    config.resolve.alias.canvas = false;
-    config.experiments = { ...config.experiments, topLevelAwait: true };
+    reactStrictMode: false,
+    swcMinify: true,
+    output: 'export',
+    webpack: (config) => {
+        config.resolve.alias.canvas = false
+        config.experiments = { ...config.experiments, topLevelAwait: true }
 
-    return config;
-  },
-};
+        return config
+    },
+}
 
-export default nextConfig;
+export default nextConfig
