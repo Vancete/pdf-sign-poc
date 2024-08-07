@@ -9,7 +9,7 @@ import './PdfViewer.scss'
 
 PDFJS.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${PDFJS.version}/build/pdf.worker.min.mjs`
 
-const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
+const PdfViewer = ({ pdfUrl, signBoxes, scale, save, setSave }) => {
     const containerRef = useRef(null)
     const [pdf, setPdf] = useState(null)
     const [pageRef, setPageRef] = useState([])
@@ -17,7 +17,7 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
     const [selected, setSelected] = useState(0)
     const [modalOpen, setModalOpen] = useState(false)
     const [signature, setSignature] = useState(null)
-    const [signaturePosition, setSignaturePosition] = useState(null)
+    const [signed, setSigned] = useState({})
     const SVG_NS = 'http://www.w3.org/2000/svg'
 
     useEffect(() => {
@@ -77,28 +77,30 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
 
                     setPageRef((prevPageRef) => [...prevPageRef, canvas])
 
-                    if (pageNum === 1) {
-                        const signatureBox = document.createElement('div')
-                        signatureBox.className = 'signature-box'
-                        signatureBox.style.width = `${(150 * scale).toFixed(0)}px`
-                        signatureBox.style.height = `${(75 * scale).toFixed(0)}px`
-                        signatureBox.style.top = `${(650 * scale).toFixed(0)}px`
-                        signatureBox.style.left = `${(380 * scale).toFixed(0)}px`
+                    if (signBoxes) {
+                        signBoxes.forEach((box, index) => {
+                            if (pageNum === box.page) {
+                                const signatureBox = document.createElement('div')
+                                signatureBox.className = 'signature-box'
+                                signatureBox.style.width = `${(150 * scale).toFixed(0)}px`
+                                signatureBox.style.height = `${(75 * scale).toFixed(0)}px`
+                                signatureBox.style.left = `${(canvas.clientWidth * box.x * scale).toFixed(0)}px`
+                                signatureBox.style.top = `${(canvas.clientHeight * box.y * scale).toFixed(0)}px`
 
-                        signatureBox.onclick = (e) => {
-                            if (document.querySelector('#signature')) {
-                                const x = e.target.offsetLeft
-                                const y = e.target.offsetTop
-                                const xPercent = (x / e.target.parentElement.querySelector('.vector-container').clientWidth).toFixed(3)
-                                const yPercent = (y / e.target.parentElement.querySelector('.vector-container').clientHeight).toFixed(3)
-                                e.target.style.opacity = '0.5'
-                                e.target.style.background = 'transparent'
-                                e.target.style.pointerEvents = 'none'
-                                setSignaturePosition({ xPercent, yPercent, pageNum })
+                                signatureBox.onclick = (e) => {
+                                    if (document.querySelector('#signature')) {
+                                        const xPercent = box.x
+                                        const yPercent = box.y
+                                        e.target.style.opacity = '0.5'
+                                        e.target.style.background = 'transparent'
+                                        e.target.style.pointerEvents = 'none'
+                                        addToSigned(index)
+                                    }
+                                }
+
+                                pageContainer.appendChild(signatureBox)
                             }
-                        }
-
-                        pageContainer.appendChild(signatureBox)
+                        })
                     }
                 }
             }
@@ -118,16 +120,16 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
     }, [pageRef])
 
     useEffect(() => {
-        if (signaturePosition && signature) {
-            const canvas = document.getElementById(`canvas-page-${signaturePosition.pageNum}`)
+        Object.keys(signed).forEach((index) => {
+            const canvas = document.getElementById(`canvas-page-${signBoxes[index].page}`)
             const ctx = canvas.getContext('2d')
             const img = new Image()
             img.onload = () => {
-                ctx.drawImage(img, signaturePosition.xPercent * canvas.clientWidth, signaturePosition.yPercent * canvas.clientHeight, (150 * scale).toFixed(0), (75 * scale).toFixed(0))
+                ctx.drawImage(img, signBoxes[index].x * canvas.clientWidth, signBoxes[index].y * canvas.clientHeight, (150 * scale).toFixed(0), (75 * scale).toFixed(0))
             }
             img.src = signature
-        }
-    }, [signaturePosition, signature])
+        })
+    }, [signed])
 
     useEffect(() => {
         if (save) {
@@ -135,6 +137,13 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
             setSave(false)
         }
     }, [save])
+
+    const addToSigned = (index) => {
+        setSigned((prevSigned) => ({
+            ...prevSigned,
+            [index]: true,
+        }))
+    }
 
     const buildSVG = (viewport, textContent) => {
         const svg = document.createElementNS(SVG_NS, 'svg')
@@ -164,7 +173,7 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
     }
 
     const handleSave = async () => {
-        if (!signature || !signaturePosition) {
+        if (!signature || !Object.keys(signed).length) {
             return
         }
 
@@ -181,18 +190,21 @@ const PdfViewer = ({ pdfUrl, scale, save, setSave }) => {
             signatureCanvas.height = img.height
             signatureCtx.drawImage(img, 0, 0, img.width, img.height)
 
-            const page = pdfDoc.getPage(signaturePosition.pageNum - 1)
-            const { width, height } = page.getSize()
-            const canvas = document.getElementById(`canvas-page-${signaturePosition.pageNum}`)
-            const pageScale = width / canvas.clientWidth
-            const x = width * signaturePosition.xPercent * pageScale
-            const y = (height - height * signaturePosition.yPercent - 75) * pageScale
+            Object.keys(signed).forEach(async (index) => {
+                const page = pdfDoc.getPage(signBoxes[index].page - 1)
+                const { width, height } = page.getSize()
+                const canvas = document.getElementById(`canvas-page-${signBoxes[index].page}`)
+                const pageScale = width / canvas.clientWidth
+                const x = width * signBoxes[index].x * pageScale
+                const y = (height - height * signBoxes[index].y - 75) * pageScale
 
-            page.drawImage(await pdfDoc.embedPng(signatureCanvas.toDataURL()), {
-                x,
-                y,
-                width: 150 * pageScale,
-                height: 75 * pageScale,
+                const embeddedPng = await pdfDoc.embedPng(signatureCanvas.toDataURL())
+                page.drawImage(embeddedPng, {
+                    x,
+                    y,
+                    width: 150 * pageScale,
+                    height: 75 * pageScale,
+                })
             })
 
             const pdfBytes = await pdfDoc.save()

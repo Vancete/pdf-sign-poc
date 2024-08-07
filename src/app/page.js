@@ -8,6 +8,11 @@ import './page.scss'
 
 const Home = () => {
     const pdfUrl = 'Bill-of-Sale.pdf'
+    const signBoxes = [
+        { page: 1, x: 0.621, y: 0.821 },
+        { page: 2, x: 0.286, y: 0.669 },
+        { page: 3, x: 0.114, y: 0.631 },
+    ]
     const [scale, setScale] = useState(1)
     const [save, setSave] = useState(false)
 
@@ -46,7 +51,7 @@ const Home = () => {
                         </button>
                     </div>
                 </div>
-                <PdfViewer pdfUrl={pdfUrl} scale={scale} save={save} setSave={setSave} />
+                <PdfViewer pdfUrl={pdfUrl} signBoxes={signBoxes} scale={scale} save={save} setSave={setSave} />
             </main>
         </div>
     )
