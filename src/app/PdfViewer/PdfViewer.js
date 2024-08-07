@@ -84,13 +84,16 @@ const PdfViewer = ({ pdfUrl, signBoxes, scale, save, setSave }) => {
                                 signatureBox.className = 'signature-box'
                                 signatureBox.style.width = `${(150 * scale).toFixed(0)}px`
                                 signatureBox.style.height = `${(75 * scale).toFixed(0)}px`
-                                signatureBox.style.left = `${(canvas.clientWidth * box.x * scale).toFixed(0)}px`
-                                signatureBox.style.top = `${(canvas.clientHeight * box.y * scale).toFixed(0)}px`
+                                signatureBox.style.left = `${(canvas.clientWidth * box.x).toFixed(0)}px`
+                                signatureBox.style.top = `${(canvas.clientHeight * box.y).toFixed(0)}px`
+                                if (signed[index]) {
+                                    signatureBox.style.opacity = '0.5'
+                                    signatureBox.style.background = 'transparent'
+                                    signatureBox.style.pointerEvents = 'none'
+                                }
 
                                 signatureBox.onclick = (e) => {
                                     if (document.querySelector('#signature')) {
-                                        const xPercent = box.x
-                                        const yPercent = box.y
                                         e.target.style.opacity = '0.5'
                                         e.target.style.background = 'transparent'
                                         e.target.style.pointerEvents = 'none'
@@ -101,6 +104,9 @@ const PdfViewer = ({ pdfUrl, signBoxes, scale, save, setSave }) => {
                                 pageContainer.appendChild(signatureBox)
                             }
                         })
+                        if (Object.keys(signed).length) {
+                            signCanvas()
+                        }
                     }
                 }
             }
@@ -120,15 +126,7 @@ const PdfViewer = ({ pdfUrl, signBoxes, scale, save, setSave }) => {
     }, [pageRef])
 
     useEffect(() => {
-        Object.keys(signed).forEach((index) => {
-            const canvas = document.getElementById(`canvas-page-${signBoxes[index].page}`)
-            const ctx = canvas.getContext('2d')
-            const img = new Image()
-            img.onload = () => {
-                ctx.drawImage(img, signBoxes[index].x * canvas.clientWidth, signBoxes[index].y * canvas.clientHeight, (150 * scale).toFixed(0), (75 * scale).toFixed(0))
-            }
-            img.src = signature
-        })
+        signCanvas()
     }, [signed])
 
     useEffect(() => {
@@ -143,6 +141,18 @@ const PdfViewer = ({ pdfUrl, signBoxes, scale, save, setSave }) => {
             ...prevSigned,
             [index]: true,
         }))
+    }
+
+    const signCanvas = () => {
+        Object.keys(signed).forEach((index) => {
+            const canvas = document.getElementById(`canvas-page-${signBoxes[index].page}`)
+            const ctx = canvas.getContext('2d')
+            const img = new Image()
+            img.onload = () => {
+                ctx.drawImage(img, signBoxes[index].x * canvas.clientWidth, signBoxes[index].y * canvas.clientHeight, (150 * scale).toFixed(0), (75 * scale).toFixed(0))
+            }
+            img.src = signature
+        })
     }
 
     const buildSVG = (viewport, textContent) => {
